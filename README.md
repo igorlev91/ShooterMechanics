@@ -1,2 +1,2 @@
-# ShooterMechanics. MovementExhibition
+# MovementExhibition
  Coming soon...
