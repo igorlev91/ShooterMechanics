@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Gameplay/Items/BaseItem.h"
+#include "ConsumableItem.h"
 #include "ShieldItem.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MOVEMENTEXHIBITION_API AShieldItem : public ABaseItem
+class MOVEMENTEXHIBITION_API AShieldItem : public AConsumableItem
 {
 	GENERATED_BODY()
 
