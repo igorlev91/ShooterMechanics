@@ -10,7 +10,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathDelegate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API  UHealthComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -32,7 +32,7 @@ public:
 	void TakeDamage(const float& Damage);
 
 	UFUNCTION(BlueprintCallable)
-	void RegenHealth(const float& Amount);
+	bool RegenHealth(const float& Amount);
 
 	UFUNCTION(BlueprintPure)
 	bool IsAlive() const;
