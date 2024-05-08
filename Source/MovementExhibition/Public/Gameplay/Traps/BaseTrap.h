@@ -9,7 +9,7 @@
 class UBoxComponent;
 
 UCLASS()
-class MOVEMENTEXHIBITION_API ABaseTrap : public AActor
+class MOVEMENTEXHIBITION_API  ABaseTrap : public AActor
 {
 	GENERATED_BODY()
 	
