@@ -3,7 +3,6 @@
 
 #include "Components/WeaponFireComponent.h"
 
-#include "AIController.h"
 #include "Characters/BaseCharacter.h"
 #include "Gameplay/Projectiles/BaseProjectile.h"
 #include "Gameplay/Weapons/BaseWeapon.h"
@@ -31,7 +30,6 @@ void UWeaponFireComponent::BeginPlay()
 	Super::BeginPlay();
 
 	WeaponRef = Cast<ABaseWeapon>(GetOwner());
-	SetController(WeaponRef? WeaponRef->GetControllerOwner() : GetWorld()->GetFirstPlayerController());
 }
 
 AActor* UWeaponFireComponent::GetOwnerToIgnore() const
@@ -50,12 +48,13 @@ bool UWeaponFireComponent::ComputeScreenCenterAndDirection(FVector& CenterLocati
 	{
 		return false;
 	}
-	
-	int32 ViewportSizeX, ViewportSizeY;
-	PlayerControllerRef->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
-	const FVector2D ViewportCenter = {ViewportSizeX / 2.f, ViewportSizeY / 2.f};
-	return UGameplayStatics::DeprojectScreenToWorld(PlayerControllerRef, ViewportCenter, CenterLocation, CenterDirection);
+	FRotator ViewPointRotator;
+	PlayerControllerRef->GetActorEyesViewPoint(CenterLocation, ViewPointRotator);
+	CenterDirection = ViewPointRotator.Vector();
+
+	return true;
+	//return UGameplayStatics::DeprojectScreenToWorld(PlayerControllerRef, ViewportCenter, CenterLocation, CenterDirection);
 }
 
 bool UWeaponFireComponent::TraceUnderScreenCenter(FHitResult& ShotResult, FVector& TraceEndLocation) const
@@ -248,12 +247,13 @@ void UWeaponFireComponent::StartSpawnProjectile()
 
 void UWeaponFireComponent::ProjectileHitSomething(AActor* ProjectileInstigator, AActor* OtherActor, const FHitResult& Hit)
 {
-	//const FVector HitLocation = (ProjectileInstigator)? ProjectileInstigator->GetActorLocation() : Hit.Location;
+//	const FVector HitLocation = (ProjectileInstigator)? ProjectileInstigator->GetActorLocation() : Hit.Location;
 	//WeaponHitDelegate.Broadcast(OtherActor, HitLocation, Hit.BoneName);
 }
 
 void UWeaponFireComponent::StartFire()
 {
+	FillControllerOwner();
 	switch (WeaponFireType)
 	{
 	case EWeaponFireType::Burst:
@@ -284,10 +284,15 @@ void UWeaponFireComponent::StopFire()
 	}
 }
 
-void UWeaponFireComponent::SetController(AController* NewController)
+AController* UWeaponFireComponent::FillControllerOwner()
 {
-	ControllerRef = NewController;
+	if (ControllerRef != nullptr)
+	{
+		return ControllerRef;
+	}
+
+	ControllerRef = (WeaponRef)? WeaponRef->GetControllerOwner() : nullptr;
 	PlayerControllerRef = Cast<APlayerController>(ControllerRef);
 	AIControllerRef = Cast<AAIController>(ControllerRef);
+	return ControllerRef;
 }
-

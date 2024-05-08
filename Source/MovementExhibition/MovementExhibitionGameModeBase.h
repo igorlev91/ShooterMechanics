@@ -27,7 +27,8 @@ protected:
 
 	UFUNCTION()
 	void OnCharacterBrokenShield(ACharacter* Character, AController* ControllerCauser);
-
+public:
+	void RegisterController(AController* NewController);
 
 	// Properties
 protected:

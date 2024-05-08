@@ -4,19 +4,32 @@
 #include "Controllers/ShooterPlayerController.h"
 
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "UI/PlayerHud.h"
 #include "Characters/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "MovementExhibition/MovementExhibitionGameModeBase.h"
 
 void AShooterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
+void AShooterPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
 	BaseCharacterRef = Cast<ABaseCharacter>(GetCharacter());
 	if (BaseCharacterRef)
 	{
+		OnCharacterReady(BaseCharacterRef);
 		BaseCharacterRef->OnCharacterReady().AddDynamic(this, &AShooterPlayerController::OnCharacterReady);
+	}
+
+	GameModeRef = Cast<AMovementExhibitionGameModeBase>(GetWorld()->GetAuthGameMode());
+	if (GameModeRef)
+	{
+		GameModeRef->RegisterController(this);
 	}
 }
 
@@ -48,6 +61,12 @@ void AShooterPlayerController::SetupInputComponent()
 			EnhancedInputComponent->BindAction(ChangeWeaponFourthSlotAction, ETriggerEvent::Triggered, this, &AShooterPlayerController::RequestChangeWeaponFourthSlot);
 
 			EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AShooterPlayerController::RequestInteract);
+			
+			UEnhancedInputLocalPlayerSubsystem* EnhancedInputLocalPlayerSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+			if (EnhancedInputLocalPlayerSubsystem)
+			{
+				EnhancedInputLocalPlayerSubsystem->AddMappingContext(MappingContext, 0);
+			}
 		}
 	}
 }
@@ -149,10 +168,19 @@ void AShooterPlayerController::InitializeHud()
 {
 	if (PlayerHudClass)
 	{
-		PlayerHudRef = CreateWidget<UPlayerHud>(this, PlayerHudClass);
-		PlayerHudRef->AddToViewport();
-		if (BaseCharacterRef)
+		if (PlayerHudRef == nullptr)
 		{
+			PlayerHudRef = CreateWidget<UPlayerHud>(this, PlayerHudClass);
+		}
+		
+		if (BaseCharacterRef && PlayerHudRef)
+		{
+			if (!PlayerHudRef->IsInViewport())
+			{
+				PlayerHudRef->AddToPlayerScreen();
+			}
+			
+			PlayerHudRef->InitializeOwnerController(this);
 			PlayerHudRef->InitializeHealthAndShield(
 				true,
 				BaseCharacterRef->GetMaxHealth(),
@@ -169,10 +197,22 @@ void AShooterPlayerController::InitializeHudDelegates()
 {
 	if (BaseCharacterRef)
 	{
-		BaseCharacterRef->OnAbsorbShieldDamage().AddDynamic(this, &AShooterPlayerController::OnCharacterAbsorbShieldDamage);
-		BaseCharacterRef->OnTakeHealthDamage().AddDynamic(this, &AShooterPlayerController::OnCharacterTakeHealthDamage);
-		BaseCharacterRef->OnRegenShield().AddDynamic(this, &AShooterPlayerController::OnCharacterRegenShield);
-		BaseCharacterRef->OnRegenHealth().AddDynamic(this, &AShooterPlayerController::OnCharacterRegenHealth);
+		if (!BaseCharacterRef->OnAbsorbShieldDamage().IsAlreadyBound(this, &AShooterPlayerController::OnCharacterAbsorbShieldDamage))
+		{
+			BaseCharacterRef->OnAbsorbShieldDamage().AddDynamic(this, &AShooterPlayerController::OnCharacterAbsorbShieldDamage);
+		}
+		if (!BaseCharacterRef->OnTakeHealthDamage().IsAlreadyBound(this, &AShooterPlayerController::OnCharacterTakeHealthDamage))
+		{
+			BaseCharacterRef->OnTakeHealthDamage().AddDynamic(this, &AShooterPlayerController::OnCharacterTakeHealthDamage);
+		}
+		if (!BaseCharacterRef->OnRegenShield().IsAlreadyBound(this, &AShooterPlayerController::OnCharacterRegenShield))
+		{
+			BaseCharacterRef->OnRegenShield().AddDynamic(this, &AShooterPlayerController::OnCharacterRegenShield);
+		}
+		if (!BaseCharacterRef->OnRegenHealth().IsAlreadyBound(this, &AShooterPlayerController::OnCharacterRegenHealth))
+		{
+			BaseCharacterRef->OnRegenHealth().AddDynamic(this, &AShooterPlayerController::OnCharacterRegenHealth);
+		}
 	}
 }
 

@@ -11,6 +11,8 @@
 class ABaseCharacter;
 class UInputAction;
 class UPlayerHud;
+class AMovementExhibitionGameModeBase;
+class UInputMappingContext;
 
 /**
  * 
@@ -22,6 +24,7 @@ class MOVEMENTEXHIBITION_API AShooterPlayerController : public APlayerController
 
 public:
 	virtual void BeginPlay() override;
+	virtual void OnPossess(APawn* InPawn) override;
 	virtual void SetupInputComponent() override;
 
 	// This is used by PlayerHUD
@@ -94,11 +97,17 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<ABaseCharacter> BaseCharacterRef;
 
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputMappingContext> MappingContext;
+
 	UPROPERTY(EditAnywhere, Category="HUD")
 	TSubclassOf<UPlayerHud> PlayerHudClass;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UPlayerHud> PlayerHudRef;
+
+	UPROPERTY(Transient)
+	TObjectPtr<AMovementExhibitionGameModeBase> GameModeRef;
 
 	UPROPERTY(Transient)
 	int32 KillCount = 0;

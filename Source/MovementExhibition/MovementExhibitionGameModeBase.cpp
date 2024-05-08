@@ -13,16 +13,14 @@ void AMovementExhibitionGameModeBase::BeginPlay()
 
 	KillCounterMapping.Empty();
 
-	TArray<AActor*> Characters;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseCharacter::StaticClass(), Characters);
+	TArray<AActor*> Controllers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AController::StaticClass(), Controllers);
 
-	for (AActor* Actor : Characters)
+	for (AActor* ControllerActor : Controllers)
 	{
-		if (ABaseCharacter* Character = Cast<ABaseCharacter>(Actor))
+		if (AController* Controller = Cast<AController>(ControllerActor))
 		{
-			Character->OnTakeDamage().AddDynamic(this, &AMovementExhibitionGameModeBase::OnCharacterTakeDamage);
-			Character->OnCharacterDeath().AddDynamic(this, &AMovementExhibitionGameModeBase::OnCharacterDeath);
-			Character->OnCharacterShieldBroken().AddDynamic(this, &AMovementExhibitionGameModeBase::OnCharacterBrokenShield);
+			RegisterController(Controller);
 		}
 	}
 }
@@ -52,11 +50,36 @@ void AMovementExhibitionGameModeBase::OnCharacterDeath(ACharacter* Character, AC
 	}
 }
 
-
 void AMovementExhibitionGameModeBase::OnCharacterBrokenShield(ACharacter* Character, AController* ControllerCauser)
 {
 	if (AShooterPlayerController* ShooterController = Cast<AShooterPlayerController>(ControllerCauser))
 	{
 		ShooterController->OnCharacterBrokeShield();
+	}
+}
+
+void AMovementExhibitionGameModeBase::RegisterController(AController* NewController)
+{
+	if (KillCounterMapping.Contains(NewController))
+	{
+		return;
+	}
+
+	if (ABaseCharacter* Character = Cast<ABaseCharacter>(NewController->GetCharacter()))
+	{
+		if (!Character->OnTakeDamage().IsAlreadyBound(this, &AMovementExhibitionGameModeBase::OnCharacterTakeDamage))
+		{
+			Character->OnTakeDamage().AddDynamic(this, &AMovementExhibitionGameModeBase::OnCharacterTakeDamage);
+		}
+		if (!Character->OnCharacterDeath().IsAlreadyBound(this, &AMovementExhibitionGameModeBase::OnCharacterDeath))
+		{
+			Character->OnCharacterDeath().AddDynamic(this, &AMovementExhibitionGameModeBase::OnCharacterDeath);
+		}
+		if (!Character->OnCharacterShieldBroken().IsAlreadyBound(this, &AMovementExhibitionGameModeBase::OnCharacterBrokenShield))
+		{
+			Character->OnCharacterShieldBroken().AddDynamic(this, &AMovementExhibitionGameModeBase::OnCharacterBrokenShield);
+		}
+
+		KillCounterMapping.Add(NewController, 0);
 	}
 }
