@@ -11,7 +11,9 @@ void AMovementExhibitionGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<AActor*> Characters; 
+	KillCounterMapping.Empty();
+
+	TArray<AActor*> Characters;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseCharacter::StaticClass(), Characters);
 
 	for (AActor* Actor : Characters)
@@ -20,6 +22,7 @@ void AMovementExhibitionGameModeBase::BeginPlay()
 		{
 			Character->OnTakeDamage().AddDynamic(this, &AMovementExhibitionGameModeBase::OnCharacterTakeDamage);
 			Character->OnCharacterDeath().AddDynamic(this, &AMovementExhibitionGameModeBase::OnCharacterDeath);
+			Character->OnCharacterShieldBroken().AddDynamic(this, &AMovementExhibitionGameModeBase::OnCharacterBrokenShield);
 		}
 	}
 }
@@ -34,8 +37,26 @@ void AMovementExhibitionGameModeBase::OnCharacterTakeDamage(AController* Control
 
 void AMovementExhibitionGameModeBase::OnCharacterDeath(ACharacter* Character, AController* ControllerCauser)
 {
+	if (!KillCounterMapping.Contains(ControllerCauser))
+	{
+		KillCounterMapping.Add(ControllerCauser, 1);
+	}
+	else
+	{
+		KillCounterMapping[ControllerCauser] += 1;
+	}
+
 	if (AShooterPlayerController* ShooterController = Cast<AShooterPlayerController>(ControllerCauser))
 	{
-		ShooterController->OnCharacterKillSomeone();
+		ShooterController->OnCharacterKillSomeone(KillCounterMapping[ControllerCauser]);
+	}
+}
+
+
+void AMovementExhibitionGameModeBase::OnCharacterBrokenShield(ACharacter* Character, AController* ControllerCauser)
+{
+	if (AShooterPlayerController* ShooterController = Cast<AShooterPlayerController>(ControllerCauser))
+	{
+		ShooterController->OnCharacterBrokeShield();
 	}
 }

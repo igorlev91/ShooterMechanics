@@ -85,7 +85,9 @@ protected:
 public:
 	void OnCharacterHitSomeone();
 
-	void OnCharacterKillSomeone();
+	void OnCharacterKillSomeone(const int32 NewKillCount);
+
+	void OnCharacterBrokeShield();
 
 // Properties
 protected:
