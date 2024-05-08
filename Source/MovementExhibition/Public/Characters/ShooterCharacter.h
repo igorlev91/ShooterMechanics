@@ -38,8 +38,8 @@ protected:
 
 // Components
 protected:
-	UPROPERTY(VisibleAnywhere, NoClear)
-	TObjectPtr<UShieldComponent> ShieldComponent;
+	//UPROPERTY(VisibleAnywhere, NoClear)
+	//TObjectPtr<UShieldComponent> ShieldComponent;
 
 protected:
 	UPROPERTY(Transient)
