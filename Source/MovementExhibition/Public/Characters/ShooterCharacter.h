@@ -25,16 +25,12 @@ public:
 	
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	UFUNCTION(BlueprintPure)
+
 	float GetMaxShield() const;
 
-	UFUNCTION(BlueprintPure)
 	float GetCurrentShield() const;
 
-	UFUNCTION(BlueprintCallable)
 	bool AddHealthRegen(const float& HealthAmount);
-
-	UFUNCTION(BlueprintCallable)
 	bool AddShieldRegen(const float& ShieldAmount);
 
 protected:
@@ -47,7 +43,7 @@ protected:
 
 protected:
 	UPROPERTY(Transient)
-	TObjectPtr<APlayerController> PC;
+	TObjectPtr<APlayerController> PCBase;
 	
 	UPROPERTY(EditAnywhere, Category="HUD")
 	TSubclassOf<UPlayerHud> PlayerHudClass;

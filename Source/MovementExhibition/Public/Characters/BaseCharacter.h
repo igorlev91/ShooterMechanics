@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Gameplay/Items/AmmoItem.h"
 #include "BaseCharacter.generated.h"
 
 class USpringArmComponent;
@@ -86,6 +87,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool AddShieldRegen(const float ShieldAmount);
 
+	UFUNCTION(BlueprintCallable)
+	bool AddAmmo(const EAmmoType AmmoType, const int32 Amount);
+
 // Events
 public:
 	FOnCharacterReady& OnCharacterReady() { return CharacterReadyDelegate; }
@@ -132,7 +136,7 @@ protected:
 	float WalkSpeed = 600.f;
 
 	UPROPERTY(Transient)
-	TObjectPtr<APlayerController> PCBase;
+	TObjectPtr<APlayerController> PC;
 
 	UPROPERTY()
 	FOnCharacterReady CharacterReadyDelegate;
