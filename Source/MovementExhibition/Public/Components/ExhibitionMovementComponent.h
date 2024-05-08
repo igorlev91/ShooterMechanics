@@ -81,10 +81,15 @@ class MOVEMENTEXHIBITION_API UExhibitionMovementComponent : public UCharacterMov
 		uint8 Saved_bWantsToHook:1 = false;
 		uint8 Saved_bCustomPressedJump:1 = false;
 
+		uint32 Saved_bWantsToProne : 1;
+		uint32 Saved_bWantsToStand : 1;
+
+
 		// Vars
 		uint8 Saved_bPrevWantsToCrouch:1 = false;
 		uint8 Saved_bReachedDestination:1 = false;
 		int32 Saved_FlyingDiveCount = 0;
+
 	};
 
 	class FNetworkPredictionData_Client_Exhibition : public FNetworkPredictionData_Client_Character
@@ -122,6 +127,7 @@ public:
 	virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds) override;
 
 	virtual bool DoJump(bool bReplayingMoves) override;
+
 
 protected:
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
@@ -416,6 +422,54 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<AExhibitionCharacter> ExhibitionCharacterRef;
 
+public:
+
+# pragma region Stand
+
+	/** If true, try to stand (or keep standing) on next update. */
+	UPROPERTY(Category = "Character Movement (General Settings)", VisibleInstanceOnly, BlueprintReadOnly)
+	bool Safe_bWantsToStand;
+
+	/**
+	* Checks if default capsule size fits, and trigger CharacterOwner->OnStanceModeChanged() on the owner if successful.
+	* @param	bClientSimulation	true when called when StanceMode is replicated to non owned clients, to update collision cylinder and offset.
+	*/
+	virtual void Stand(const bool bClientSimulation = false);
+
+# pragma endregion Stand
+
+# pragma region Prone
+
+	/** The maximum ground speed when walking and prone. */
+	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0", ForceUnits = "cm/s"))
+	float MaxWalkSpeedProned;
+
+	/** Collision half-height when prone (component scale is applied separately) */
+	UPROPERTY(Category = "Character Movement (General Settings)", EditAnywhere, BlueprintReadWrite, BlueprintSetter = SetPronedHalfHeight, BlueprintGetter = GetPronedHalfHeight, meta = (ClampMin = "0", UIMin = "0", ForceUnits = cm))
+	float PronedHalfHeight;
+
+	/** Returns the collision half-height when prone (component scale is applied separately) */
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE float GetPronedHalfHeight() const { return PronedHalfHeight; };
+
+	/** Sets collision half-height when prone and updates dependent computations */
+	UFUNCTION(BlueprintSetter)
+	void SetPronedHalfHeight(const float NewValue);
+
+	/** If true, try to prone (or keep prone) on next update. */
+	UPROPERTY(Category = "Character Movement (General Settings)", VisibleInstanceOnly, BlueprintReadOnly)
+	bool Safe_bWantsToProne;
+
+	/**
+	 * Checks if new capsule size fits, and call CharacterOwner->OnStanceModeChanged() if successful.
+	 * In general you should set bWantsToProne instead to have the prone persist during movement, or just use the prone functions on the owning Character.
+	 * @param	bClientSimulation	true when called when StanceMode is replicated to non owned clients, to update collision cylinder and offset.
+	 */
+	virtual void Prone(const bool bClientSimulation = false);
+
+# pragma endregion Prone
+
+
 // Delegates
 protected:
 	UPROPERTY(BlueprintAssignable, Category="Exhibition Events")
@@ -445,4 +499,7 @@ public:
 
 	static const FString ROPE_TRAVEL_NAME;
 	static const FString ROPE_TRANSITION_NAME;
+
+
+
 };

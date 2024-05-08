@@ -441,6 +441,9 @@ void UExhibitionMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 	Safe_bWantsToSprint = (Flags & FSavedMove_Character::CompressedFlags::FLAG_Custom_0) != 0;
 	Safe_bWantsToDive = (Flags & FSavedMove_Character::CompressedFlags::FLAG_Custom_1) != 0;
 	Safe_bWantsToHook = (Flags & FSavedMove_Character::CompressedFlags::FLAG_Custom_2) != 0;
+	Safe_bWantsToStand = ((Flags & FSavedMove_Character::FLAG_Custom_3) != 0);
+	Safe_bWantsToProne = ((Flags & FSavedMove_Character::FLAG_Custom_4) != 0);
+	
 }
 
 bool UExhibitionMovementComponent::IsCustomMovementMode(const ECustomMovementMode& InMovementMode) const
@@ -1392,4 +1395,99 @@ void UExhibitionMovementComponent::OnRep_FindHook()
 void UExhibitionMovementComponent::OnRep_FindRope()
 {
 	CharacterOwner->PlayAnimMontage(HangToRopeMontage);
+}
+
+void UExhibitionMovementComponent::Prone(const bool bClientSimulation)
+{
+	if (!HasValidData())
+	{
+		return;
+	}
+
+	if (!bClientSimulation && !CanCrouchInCurrentState())
+	{
+		return;
+	}
+
+	// See if collision is already at desired size.
+	if (ExhibitionCharacterRef->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() == PronedHalfHeight)
+	{
+		if (!bClientSimulation)
+		{
+			ExhibitionCharacterRef->StanceMode = EAdvancedStanceMode::Prone;
+		}
+
+		ExhibitionCharacterRef->OnStanceModeChanged(0.f, 0.f, EAdvancedStanceMode::Prone);
+		return;
+	}
+
+	if (bClientSimulation && ExhibitionCharacterRef->GetLocalRole() == ROLE_SimulatedProxy)
+	{
+		// restore collision size before proning
+		ACharacter* DefaultCharacter = ExhibitionCharacterRef->GetClass()->GetDefaultObject<ACharacter>();
+		ExhibitionCharacterRef->GetCapsuleComponent()->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(), DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight());
+		bShrinkProxyCapsule = true;
+	}
+
+	// Change collision size to proning dimensions
+	const float ComponentScale = ExhibitionCharacterRef->GetCapsuleComponent()->GetShapeScale();
+	const float OldUnscaledHalfHeight = ExhibitionCharacterRef->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+	const float OldUnscaledRadius = ExhibitionCharacterRef->GetCapsuleComponent()->GetUnscaledCapsuleRadius();
+
+	// Height is not allowed to be smaller than radius.
+	const float ClampedPronedHalfHeight = FMath::Max3(0.f, OldUnscaledRadius, PronedHalfHeight);
+	ExhibitionCharacterRef->GetCapsuleComponent()->SetCapsuleSize(OldUnscaledRadius, ClampedPronedHalfHeight);
+	float HalfHeightAdjust = (OldUnscaledHalfHeight - ClampedPronedHalfHeight);
+	float ScaledHalfHeightAdjust = HalfHeightAdjust * ComponentScale;
+
+	if (!bClientSimulation)
+	{
+		if (bCrouchMaintainsBaseLocation)
+		{
+			// Intentionally not using MoveUpdatedComponent, where a horizontal plane constraint would prevent the base of the capsule from staying at the same spot.
+			UpdatedComponent->MoveComponent(FVector(0.f, 0.f, -ScaledHalfHeightAdjust), UpdatedComponent->GetComponentQuat(), true, nullptr, EMoveComponentFlags::MOVECOMP_NoFlags, ETeleportType::TeleportPhysics);
+		}
+
+		ExhibitionCharacterRef->StanceMode = EAdvancedStanceMode::Prone;
+	}
+
+	bForceNextFloorCheck = true;
+
+	// OnStanceModeChanged takes the change from the Default size, not the current one (though they are usually the same).
+	const float MeshAdjust = ScaledHalfHeightAdjust;
+	ACharacter* DefaultCharacter = ExhibitionCharacterRef->GetClass()->GetDefaultObject<ACharacter>();
+	HalfHeightAdjust = (DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() - ClampedPronedHalfHeight);
+	ScaledHalfHeightAdjust = HalfHeightAdjust * ComponentScale;
+
+	AdjustProxyCapsuleSize();
+	ExhibitionCharacterRef->OnStanceModeChanged(HalfHeightAdjust, ScaledHalfHeightAdjust, EAdvancedStanceMode::Prone);
+
+	// Don't smooth this change in mesh position
+	if ((bClientSimulation && ExhibitionCharacterRef->GetLocalRole() == ROLE_SimulatedProxy) || (IsNetMode(NM_ListenServer) && ExhibitionCharacterRef->GetRemoteRole() == ROLE_AutonomousProxy))
+	{
+		FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character();
+		if (ClientData)
+		{
+			ClientData->MeshTranslationOffset -= FVector(0.f, 0.f, MeshAdjust);
+			ClientData->OriginalMeshTranslationOffset = ClientData->MeshTranslationOffset;
+		}
+	}
+}
+
+void UExhibitionMovementComponent::Stand(const bool bClientSimulation)
+{
+	Super::UnCrouch(bClientSimulation);
+
+	check(ExhibitionCharacterRef);
+
+	if (ExhibitionCharacterRef && !ExhibitionCharacterRef->bIsCrouched)
+	{
+		ExhibitionCharacterRef->StanceMode = EAdvancedStanceMode::Standing;
+		ExhibitionCharacterRef->OnStanceModeChanged(0.f, 0.f, EAdvancedStanceMode::Standing);
+	}
+}
+
+void UExhibitionMovementComponent::SetPronedHalfHeight(const float NewValue)
+{
+	PronedHalfHeight = NewValue;
 }
