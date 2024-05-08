@@ -6,11 +6,12 @@
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
+class ABaseCharacter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathDelegate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API UHealthComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API  UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -23,9 +24,12 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+protected:
+	UFUNCTION()
+	void OnRep_CurrentHealth(const float OldHealthValue);
+	
 // Component interface
 public:
 	UFUNCTION(BlueprintCallable)
@@ -53,8 +57,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Health")
 	float MaxHealth = 100.f;
 
-	UPROPERTY(VisibleAnywhere, Category="Health")
+	UPROPERTY(VisibleAnywhere, Category="Health", ReplicatedUsing=OnRep_CurrentHealth)
 	float CurrentHealth = 0.f;
+
+	UPROPERTY()
+	TObjectPtr<ABaseCharacter> BaseCharacterRef;
 
 	FOnDeathDelegate OnDeathDelegate;
 };

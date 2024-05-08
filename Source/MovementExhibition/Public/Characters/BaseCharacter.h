@@ -29,7 +29,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCharacterDeathDelegate, ACharact
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCharacterShieldBrokenDelegate, ACharacter*, DamagedCharacter, AController*, ControllerCauser);
 
 UCLASS()
-class MOVEMENTEXHIBITION_API ABaseCharacter : public ACharacter
+class MOVEMENTEXHIBITION_API  ABaseCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -110,6 +110,11 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	EAmmoType GetCurrentWeaponAmmoType() const;
+
+	void NotifyShieldDamage(const float DamageAbsorbed, const float NewShield);
+	void NotifyShieldRegen(const float Amount, const float NewShield);
+	void NotifyHealthDamage(const float DamageAbsorbed, const float NewHealth);
+	void NotifyHealthRegen(const float Amount, const float NewHealth);
 
 // Callbacks
 protected:
