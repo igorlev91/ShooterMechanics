@@ -5,10 +5,12 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
+#include "Components/AmmoInventoryComponent.h"
 #include "Components/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/ShieldComponent.h"
+#include "Components/WeaponInventoryComponent.h"
 #include "UI/PlayerHud.h"
 
 // Sets default values
@@ -32,6 +34,8 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	ShieldComponent = FindComponentByClass<UShieldComponent>();
+	WeaponInventoryComponent = FindComponentByClass<UWeaponInventoryComponent>();
+	AmmoInventoryComponent = FindComponentByClass<UAmmoInventoryComponent>();
 	
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -41,7 +45,7 @@ void ABaseCharacter::BeginPlay()
 			EnhancedInputComponent->AddMappingContext(MappingContext, 0);
 		}
 
-		PC = PlayerController;
+		PCBase = PlayerController;
 	}
 
 	CharacterReadyDelegate.Broadcast(this);
@@ -185,6 +189,59 @@ void ABaseCharacter::RequestJump()
 void ABaseCharacter::RequestStopJumping()
 {
 	StopJumping();
+}
+
+void ABaseCharacter::RequestWeaponPullTrigger() const
+{
+	if (WeaponInventoryComponent)
+	{
+		WeaponInventoryComponent->PullTrigger();
+	}
+}
+
+void ABaseCharacter::RequestWeaponReleaseTrigger() const
+{
+	if (WeaponInventoryComponent)
+	{
+		WeaponInventoryComponent->ReleaseTrigger();
+	}
+}
+
+void ABaseCharacter::RequestReloadCurrentWeapon()
+{
+	// No Weapon to reload
+	if (WeaponInventoryComponent == nullptr)
+	{
+		return;
+	}
+	
+	ABaseWeapon* CurrentWeapon = WeaponInventoryComponent->GetCurrentWeapon();
+	// No Weapon to reload
+	if (CurrentWeapon == nullptr)
+	{
+		return;
+	}
+
+	if (CurrentWeapon->GetCurrentAmmo() == CurrentWeapon->GetMagCapacity())
+	{
+		return;
+	}
+	
+	// TODO If no inventory we have infinite ammo?
+	float AmmoToReload = CurrentWeapon->GetMagCapacity();
+	if (AmmoInventoryComponent)
+	{
+		// TODO Configuration -> If true we reload missing ammo, otherwise the entire capacity
+		const float MissingAmmo = CurrentWeapon->GetMissingAmmo();
+		AmmoToReload = AmmoInventoryComponent->UseAmmo(CurrentWeapon->GetAmmoType(), MissingAmmo);
+	}
+
+	if (AmmoToReload <= 0)
+	{
+		return;
+	}
+	
+	CurrentWeapon->Reload(AmmoToReload);
 }
 
 float ABaseCharacter::GetMaxHealth() const
