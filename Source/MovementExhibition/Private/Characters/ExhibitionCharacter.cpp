@@ -7,6 +7,7 @@
 #include "Components/ExhibitionMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AExhibitionCharacter::AExhibitionCharacter(const FObjectInitializer& Initializer) :
@@ -218,4 +219,12 @@ void AExhibitionCharacter::OnStanceModeChanged(const float HalfHeightAdjust, con
 	}
 
 	K2_OnStanceModeChanged(HalfHeightAdjust, ScaledHalfHeightAdjust, NewStanceMode);
+}
+
+
+void AExhibitionCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AExhibitionCharacter, StanceMode, COND_SimulatedOnly);
 }

@@ -26,7 +26,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRegenShieldDelegate, ACharacte
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRegenHealthDelegate, ACharacter*, InstigatorCharacter, const float, RegenAmount, const float, NewHealthValue);
 
 UCLASS()
-class KOTHARENA_API ABaseCharacter : public ACharacter
+class MOVEMENTEXHIBITION_API ABaseCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
