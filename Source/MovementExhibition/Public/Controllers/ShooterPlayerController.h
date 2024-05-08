@@ -11,7 +11,7 @@
 class ABaseCharacter;
 class UInputAction;
 class UPlayerHud;
-class AMovementExhibitionGameModeBase;
+class AExhibitionGameMode;
 class UInputMappingContext;
 
 /**
@@ -110,7 +110,7 @@ protected:
 	TObjectPtr<UPlayerHud> PlayerHudRef;
 
 	UPROPERTY(Transient)
-	TObjectPtr<AMovementExhibitionGameModeBase> GameModeRef;
+	TObjectPtr<AExhibitionGameMode> GameModeRef;
 
 	UPROPERTY(Transient)
 	int32 KillCount = 0;

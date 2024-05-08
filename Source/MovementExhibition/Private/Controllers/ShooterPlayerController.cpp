@@ -9,7 +9,7 @@
 #include "UI/PlayerHud.h"
 #include "Characters/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "MovementExhibition\MovementExhibitionGameModeBase.cpp"
+#include "GameModes/ExhibitionGameMode.h"
 
 void AShooterPlayerController::BeginPlay()
 {
@@ -26,7 +26,7 @@ void AShooterPlayerController::OnPossess(APawn* InPawn)
 		BaseCharacterRef->OnCharacterReady().AddDynamic(this, &AShooterPlayerController::OnCharacterReady);
 	}
 
-	GameModeRef = Cast<AMovementExhibitionGameModeBase>(GetWorld()->GetAuthGameMode());
+	GameModeRef = Cast<AExhibitionGameMode>(GetWorld()->GetAuthGameMode());
 	if (GameModeRef)
 	{
 		GameModeRef->RegisterController(this);
