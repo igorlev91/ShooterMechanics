@@ -63,15 +63,19 @@ void ABaseWeapon::SpawnHitParticle(const FVector& Location, const FRotator& Rota
 
 void ABaseWeapon::MulticastSpawnHitParticle_Implementation(const FVector& Location, const FRotator& Rotation) const
 {
-	SpawnHitParticle(Location, Rotation);
+	if (BaseCharacterRef && !BaseCharacterRef->IsLocallyControlled())
+	{
+		SpawnHitParticle(Location, Rotation);
+	}
 }
 
-void ABaseWeapon::ApplyDamage(AActor* HitActor, const float Damage) const
+void ABaseWeapon::ApplyDamage(AActor* HitActor, const float Damage)
 {
 	if (HitActor && HasAuthority())
 	{
 		AActor* InstigatorActor = GetOwner();
-		UGameplayStatics::ApplyDamage(HitActor, Damage, PlayerController, InstigatorActor, WeaponDamageType);
+		AController* InstigatorController = GetControllerOwner(); 
+		UGameplayStatics::ApplyDamage(HitActor, Damage, InstigatorController, InstigatorActor, WeaponDamageType);
 	}
 }
 
@@ -132,7 +136,10 @@ void ABaseWeapon::ServerHandleWeaponHit_Implementation(const float BaseDamage, A
 
 void ABaseWeapon::MulticastPlaySound_Implementation(USoundCue* Sound, const FVector& Location, const FRotator& Rotation) const
 {
-	PlaySound(Sound, Location, Rotation);
+	if (BaseCharacterRef && !BaseCharacterRef->IsLocallyControlled())
+	{
+		PlaySound(Sound, Location, Rotation);
+	}
 }
 
 void ABaseWeapon::PlaySound(USoundCue* Sound, const FVector& Location, const FRotator& Rotation) const
