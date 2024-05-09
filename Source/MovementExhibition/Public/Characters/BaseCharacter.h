@@ -29,7 +29,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCharacterDeathDelegate, ACharact
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCharacterShieldBrokenDelegate, ACharacter*, DamagedCharacter, AController*, ControllerCauser);
 
 UCLASS()
-class MOVEMENTEXHIBITION_API  ABaseCharacter : public ACharacter
+class MOVEMENTEXHIBITION_API ABaseCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -51,6 +51,15 @@ protected:
 	void OnShieldBroken();
 
 	void OnDeath();
+
+	void RequestEquipDefaultWeapon();
+	void RequestEquipWeapon(ABaseWeapon* NewWeapon);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestEquipWeapon(ABaseWeapon* NewWeapon);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRequestEquipWeapon(ABaseWeapon* NewWeapon);
 
 public:	
 	// Called every frame
@@ -110,6 +119,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	EAmmoType GetCurrentWeaponAmmoType() const;
+
+	UFUNCTION(BlueprintPure)
+	ABaseWeapon* GetCurrentWeapon() const;
 
 	void NotifyShieldDamage(const float DamageAbsorbed, const float NewShield);
 	void NotifyShieldRegen(const float Amount, const float NewShield);
