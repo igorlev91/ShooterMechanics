@@ -11,18 +11,20 @@ class ABaseCharacter;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathDelegate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API  UHealthComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
 	UHealthComponent();
-
-protected:
+	
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
+	
+	virtual void OnRegister() override;
+	
+// Network functions
 public:	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

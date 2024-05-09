@@ -24,7 +24,7 @@ class MOVEMENTEXHIBITION_API AShooterPlayerController : public APlayerController
 
 public:
 	virtual void BeginPlay() override;
-	virtual void OnPossess(APawn* InPawn) override;
+	virtual void AcknowledgePossession(APawn* P) override;
 	virtual void SetupInputComponent() override;
 
 	// This is used by PlayerHUD
@@ -68,6 +68,7 @@ protected:
 	void InitializeMappingContext();
 
 protected:
+	void SetupCharacter(AActor* NewCharacter);
 	void InitializeHud();
 	void InitializeHudDelegates();
 	
@@ -87,6 +88,17 @@ protected:
 	void RequestChangeWeaponThirdSlot();
 	void RequestChangeWeaponFourthSlot();
 	void RequestChangeWeapon(const int32 Index);
+
+// Net functions
+protected:
+	UFUNCTION(Client, Reliable)
+	void ClientOnCharacterHitSomeone();
+
+	UFUNCTION(Client, Reliable)
+	void ClientOnCharacterBrokeShield();
+
+	UFUNCTION(Client, Reliable)
+	void ClientOnCharacterKillSomeone(const int32 NewKillCount);
 
 public:
 	void OnCharacterHitSomeone();

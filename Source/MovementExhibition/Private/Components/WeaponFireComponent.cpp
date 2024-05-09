@@ -281,8 +281,8 @@ void UWeaponFireComponent::HandleStopFire()
 
 void UWeaponFireComponent::ProjectileHitSomething(AActor* ProjectileInstigator, AActor* OtherActor, const FHitResult& Hit)
 {
-	const FVector HitLocation = (ProjectileInstigator)? ProjectileInstigator->GetActorLocation() : Hit.Location;
-	WeaponHitDelegate.Broadcast(OtherActor, HitLocation, Hit.BoneName);
+	//const FVector HitLocation = (ProjectileInstigator) ? ProjectileInstigator->GetActorLocation() : Hit.Location;
+	//WeaponHitDelegate.Broadcast(OtherActor, HitLocation, Hit.BoneName);
 }
 
 void UWeaponFireComponent::StartFire()

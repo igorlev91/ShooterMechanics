@@ -21,14 +21,22 @@ UShieldComponent::UShieldComponent()
 void UShieldComponent::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
-	CurrentShield = MaxShield;
+void UShieldComponent::OnRegister()
+{
+	Super::OnRegister();
+	if (GetOwner()->HasAuthority())
+	{
+		CurrentShield = MaxShield;
+	}
+	
 	BaseCharacterRef = Cast<ABaseCharacter>(GetOwner());
 }
 
 void UShieldComponent::OnRep_CurrentShield(const float OldShieldValue)
 {
-	if (!BaseCharacterRef)
+	if (!BaseCharacterRef || !BaseCharacterRef->IsLocallyControlled())
 	{
 		return;
 	}

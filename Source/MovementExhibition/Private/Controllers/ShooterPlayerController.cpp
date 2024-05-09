@@ -9,28 +9,16 @@
 #include "UI/PlayerHud.h"
 #include "Characters/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameModes/ExhibitionGameMode.h"
 
 void AShooterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void AShooterPlayerController::OnPossess(APawn* InPawn)
+void AShooterPlayerController::AcknowledgePossession(APawn* P)
 {
-	Super::OnPossess(InPawn);
-	BaseCharacterRef = Cast<ABaseCharacter>(GetCharacter());
-	if (BaseCharacterRef)
-	{
-		OnCharacterReady(BaseCharacterRef);
-		BaseCharacterRef->OnCharacterReady().AddDynamic(this, &AShooterPlayerController::OnCharacterReady);
-	}
-
-	GameModeRef = Cast<AExhibitionGameMode>(GetWorld()->GetAuthGameMode());
-	if (GameModeRef)
-	{
-		GameModeRef->RegisterController(this);
-	}
+	Super::AcknowledgePossession(P);
+	SetupCharacter(P);
 }
 
 void AShooterPlayerController::SetupInputComponent()
@@ -143,7 +131,20 @@ void AShooterPlayerController::InitializeMappingContext()
 	}
 }
 
-void AShooterPlayerController::OnCharacterHitSomeone()
+void AShooterPlayerController::SetupCharacter(AActor* NewCharacter)
+{
+	BaseCharacterRef = Cast<ABaseCharacter>(NewCharacter);
+	if (BaseCharacterRef != nullptr)
+	{
+		OnCharacterReady(BaseCharacterRef);
+		if (!BaseCharacterRef->OnCharacterReady().IsAlreadyBound(this, &AShooterPlayerController::OnCharacterReady))
+		{
+			BaseCharacterRef->OnCharacterReady().AddDynamic(this, &AShooterPlayerController::OnCharacterReady);
+		}
+	}
+}
+
+void AShooterPlayerController::ClientOnCharacterHitSomeone_Implementation()
 {
 	if (PlayerHudRef)
 	{
@@ -151,7 +152,15 @@ void AShooterPlayerController::OnCharacterHitSomeone()
 	}
 }
 
-void AShooterPlayerController::OnCharacterKillSomeone(const int32 NewKillCount)
+void AShooterPlayerController::ClientOnCharacterBrokeShield_Implementation()
+{
+	if (PlayerHudRef)
+	{
+		PlayerHudRef->OnBrokeShield();
+	}
+}
+
+void AShooterPlayerController::ClientOnCharacterKillSomeone_Implementation(const int32 NewKillCount)
 {
 	KillCount = NewKillCount;
 
@@ -161,17 +170,24 @@ void AShooterPlayerController::OnCharacterKillSomeone(const int32 NewKillCount)
 	}
 }
 
+void AShooterPlayerController::OnCharacterHitSomeone()
+{
+	ClientOnCharacterHitSomeone();
+}
+
+void AShooterPlayerController::OnCharacterKillSomeone(const int32 NewKillCount)
+{
+	ClientOnCharacterKillSomeone(NewKillCount);
+}
+
 void AShooterPlayerController::OnCharacterBrokeShield()
 {
-	if (PlayerHudRef)
-	{
-		PlayerHudRef->OnBrokeShield();
-	}
+	ClientOnCharacterBrokeShield();
 }
 
 void AShooterPlayerController::InitializeHud()
 {
-	if (PlayerHudClass)
+	if (PlayerHudClass && IsLocalController())
 	{
 		if (PlayerHudRef == nullptr)
 		{
@@ -200,7 +216,7 @@ void AShooterPlayerController::InitializeHud()
 
 void AShooterPlayerController::InitializeHudDelegates()
 {
-	if (BaseCharacterRef)
+	if (BaseCharacterRef && IsLocalController())
 	{
 		if (!BaseCharacterRef->OnAbsorbShieldDamage().IsAlreadyBound(this, &AShooterPlayerController::OnCharacterAbsorbShieldDamage))
 		{
