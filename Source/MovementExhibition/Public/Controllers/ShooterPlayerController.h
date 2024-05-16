@@ -11,7 +11,7 @@
 class ABaseCharacter;
 class UInputAction;
 class UPlayerHud;
-class AExhibitionGameMode;
+class AKothArenaGameModeBase;
 class UInputMappingContext;
 
 /**
@@ -91,6 +91,8 @@ protected:
 	void RequestChangeWeapon(const int32 Index);
 	void RequestStartAiming();
 	void RequestEndAiming();
+	void RequestStartThrowing();
+	void RequestFinishThrowing();
 
 // Net functions
 protected:
@@ -125,7 +127,7 @@ protected:
 	TObjectPtr<UPlayerHud> PlayerHudRef;
 
 	UPROPERTY(Transient)
-	TObjectPtr<AExhibitionGameMode> GameModeRef;
+	TObjectPtr<AKothArenaGameModeBase> GameModeRef;
 
 	UPROPERTY(Transient)
 	int32 KillCount = 0;
@@ -151,9 +153,6 @@ protected:
     TObjectPtr<UInputAction> PullTriggerAction;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> ReleaseTriggerAction;
-
-	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> ReloadWeaponAction;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
@@ -172,8 +171,8 @@ protected:
 	TObjectPtr<UInputAction> ChangeWeaponFourthSlotAction;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> StartAimAction;
-
+	TObjectPtr<UInputAction> AimAction;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> EndAimAction;
+	TObjectPtr<UInputAction> ThrowAction;
 };
