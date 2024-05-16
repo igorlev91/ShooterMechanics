@@ -11,6 +11,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/ShieldComponent.h"
 #include "Components/WeaponInventoryComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "UI/PlayerHud.h"
 
 // Sets default values
@@ -43,6 +44,7 @@ void ABaseCharacter::PostInitializeComponents()
 	InitializeCharacter();
 }
 
+// This one is called only on server
 void ABaseCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -51,6 +53,8 @@ void ABaseCharacter::PossessedBy(AController* NewController)
 	{
 		PC = PlayerController;
 	}
+
+	RequestEquipDefaultWeapon();
 }
 
 void ABaseCharacter::InitializeCharacter()
@@ -66,14 +70,8 @@ void ABaseCharacter::InitializeCharacter()
 		SearchItemComponent->OnItemLost().AddDynamic(this, &ABaseCharacter::OnItemLost);
 	}
 
-	if (WeaponInventoryComponent)
-	{
-		if (WeaponInventoryComponent->ShouldSpawnDefaultWeaponOnBeginPlay())
-		{
-			RequestEquipDefaultWeapon();
-		}
-	}
-
+	WalkSpeed = (GetCharacterMovement())? GetCharacterMovement()->MaxWalkSpeed : WalkSpeed;
+	IdleFov = (CameraComponent)? CameraComponent->FieldOfView : IdleFov;
 	CharacterReadyDelegate.Broadcast(this);
 }
 
@@ -150,11 +148,20 @@ void ABaseCharacter::OnDeath()
 
 void ABaseCharacter::RequestEquipDefaultWeapon()
 {
-	if (WeaponInventoryComponent && HasAuthority())
+	if (!HasAuthority())
 	{
-		ABaseWeapon* DefaultWeapon = WeaponInventoryComponent->SpawnDefaultWeapon();
-		RequestEquipWeapon(DefaultWeapon);
-		//MulticastRequestEquipWeapon(DefaultWeapon);
+		return;
+	}
+	
+	if (bDefaultWeaponSpawned)
+	{
+		return;
+	}
+	
+	if (WeaponInventoryComponent && WeaponInventoryComponent->ShouldSpawnDefaultWeaponOnBeginPlay())
+	{
+		bDefaultWeaponSpawned = true;
+		WeaponInventoryComponent->EquipDefaultWeapon();
 	}
 }
 
@@ -186,6 +193,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	UpdateSprintStatus();
+	UpdateAim(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -219,7 +227,8 @@ float ABaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 
 void ABaseCharacter::RequestMove(const FVector2d& AxisValue)
 {
-	const FRotator CurrentRotation = GetControlRotation();
+	const FRotator ControlRotation = GetControlRotation();
+	const FRotator CurrentRotation{0.f, ControlRotation.Yaw, 0.f};
 
 	const float ForwardAxisValue = AxisValue.X;
 	const float RightAxisValue = AxisValue.Y;
@@ -233,14 +242,14 @@ void ABaseCharacter::RequestLook(const FVector2d& AxisValue)
 	const float PitchAxisValue = AxisValue.Y;
 	const float YawAxisValue = AxisValue.X;
 
-	const float LookUpRate = BaseLookUpRate;
-	const float LookRightRate = BaseLookRightRate;
+	const float LookUpRate = GetLookUpRate();
+	const float LookRightRate = GetLookRightRate();
 		
 	AddControllerPitchInput(PitchAxisValue * LookUpRate * GetWorld()->GetDeltaSeconds());
 	AddControllerYawInput(YawAxisValue * LookRightRate * GetWorld()->GetDeltaSeconds());
 }
 
-void ABaseCharacter::RequestToggleSprint() const
+void ABaseCharacter::RequestToggleSprint()
 {
 	if (!HasAuthority())
 	{
@@ -251,7 +260,7 @@ void ABaseCharacter::RequestToggleSprint() const
 	ServerRequestSprintToggle();
 }
 
-void ABaseCharacter::HandleToggleSprint() const
+void ABaseCharacter::HandleToggleSprint()
 {
 	if (GetCharacterMovement()->Velocity.Length() <= 0.f)
 	{
@@ -260,12 +269,97 @@ void ABaseCharacter::HandleToggleSprint() const
 	
 	if (GetCharacterMovement()->MaxWalkSpeed == WalkSpeed)
 	{
+		HandleRequestEndAiming();
 		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 	}
 	else
 	{
 		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
+}
+
+void ABaseCharacter::HandleRequestStartAiming()
+{
+	if (CombatState != ECharacterCombatState::Reloading)
+	{
+		CombatState = ECharacterCombatState::Aiming;
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->MaxWalkSpeed = AimingWalkSpeed;
+	}
+}
+
+void ABaseCharacter::HandleRequestEndAiming()
+{
+	if (CombatState == ECharacterCombatState::Aiming)
+	{
+		CombatState = ECharacterCombatState::Idle;
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	}
+}
+
+void ABaseCharacter::HandleRequestReload()
+{
+	// No Weapon to reload
+	if (WeaponInventoryComponent == nullptr)
+	{
+		return;
+	}
+	
+	ABaseWeapon* CurrentWeapon = WeaponInventoryComponent->GetCurrentWeapon();
+	// No Weapon to reload
+	if (CurrentWeapon == nullptr)
+	{
+		return;
+	}
+
+	if (CurrentWeapon->GetCurrentAmmo() == CurrentWeapon->GetMagCapacity())
+	{
+		return;
+	}
+
+	HandleRequestEndAiming();
+
+	CombatState = ECharacterCombatState::Reloading;
+	
+	// TODO If no inventory we have infinite ammo?
+	float AmmoToReload = CurrentWeapon->GetMagCapacity();
+	if (AmmoInventoryComponent)
+	{
+		// TODO Configuration -> If true we reload missing ammo, otherwise the entire capacity
+		const float MissingAmmo = CurrentWeapon->GetMissingAmmo();
+		AmmoToReload = AmmoInventoryComponent->UseAmmo(CurrentWeapon->GetAmmoType(), MissingAmmo);
+	}
+
+	if (AmmoToReload <= 0)
+	{
+		CombatState = ECharacterCombatState::Idle;
+		return;
+	}
+	
+	CurrentWeapon->Reload(AmmoToReload);
+	CombatState = ECharacterCombatState::Idle;
+}
+
+void ABaseCharacter::UpdateAim(const float DeltaTime)
+{
+	if (!CameraComponent)
+	{
+		return;	
+	}
+
+	if (IsAiming())
+	{
+		CurrentTimeAiming = FMath::Clamp(CurrentTimeAiming + DeltaTime, 0.f, TimeToAim);
+	}
+	else
+	{
+		CurrentTimeAiming = FMath::Clamp(CurrentTimeAiming - DeltaTime, 0.f, TimeToAim);
+	}
+
+	const float TimeRatio = FMath::Clamp(CurrentTimeAiming / TimeToAim, 0.f, 1.f);
+	const float NewFov = FMath::Lerp(IdleFov, AimingFov, TimeRatio);
+	CameraComponent->FieldOfView = NewFov;
 }
 
 void ABaseCharacter::RequestJump()
@@ -296,39 +390,8 @@ void ABaseCharacter::RequestWeaponReleaseTrigger() const
 
 void ABaseCharacter::RequestReloadCurrentWeapon()
 {
-	// No Weapon to reload
-	if (WeaponInventoryComponent == nullptr)
-	{
-		return;
-	}
-	
-	ABaseWeapon* CurrentWeapon = WeaponInventoryComponent->GetCurrentWeapon();
-	// No Weapon to reload
-	if (CurrentWeapon == nullptr)
-	{
-		return;
-	}
-
-	if (CurrentWeapon->GetCurrentAmmo() == CurrentWeapon->GetMagCapacity())
-	{
-		return;
-	}
-	
-	// TODO If no inventory we have infinite ammo?
-	float AmmoToReload = CurrentWeapon->GetMagCapacity();
-	if (AmmoInventoryComponent)
-	{
-		// TODO Configuration -> If true we reload missing ammo, otherwise the entire capacity
-		const float MissingAmmo = CurrentWeapon->GetMissingAmmo();
-		AmmoToReload = AmmoInventoryComponent->UseAmmo(CurrentWeapon->GetAmmoType(), MissingAmmo);
-	}
-
-	if (AmmoToReload <= 0)
-	{
-		return;
-	}
-	
-	CurrentWeapon->Reload(AmmoToReload);
+	HandleRequestReload();
+	ServerRequestReload();
 }
 
 void ABaseCharacter::RequestChangeWeapon(const int32 WeaponIndex) const
@@ -345,6 +408,18 @@ void ABaseCharacter::RequestInteract()
 	{
 		RequestEquipWeapon(WeaponFoundRef);
 	}
+}
+
+void ABaseCharacter::RequestStartAiming()
+{
+	HandleRequestStartAiming();
+	ServerRequestStartAiming();
+}
+
+void ABaseCharacter::RequestEndAiming()
+{
+	HandleRequestEndAiming();
+	ServerRequestEndAiming();
 }
 
 float ABaseCharacter::GetMaxHealth() const
@@ -500,6 +575,16 @@ ABaseWeapon* ABaseCharacter::GetCurrentWeapon() const
 	return nullptr;
 }
 
+float ABaseCharacter::GetLookUpRate() const
+{
+	return (IsAiming())? AimingLookUpRate : BaseLookUpRate;
+}
+
+float ABaseCharacter::GetLookRightRate() const
+{
+	return (IsAiming())? AimingLookRightRate : BaseLookRightRate;
+}
+
 void ABaseCharacter::NotifyShieldDamage(const float DamageAbsorbed, const float NewShield)
 {
 	ensure(IsLocallyControlled());
@@ -553,7 +638,30 @@ void ABaseCharacter::OnItemLost(AActor* ItemLost)
 	}
 }
 
-void ABaseCharacter::ServerRequestSprintToggle_Implementation() const
+void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABaseCharacter, bDefaultWeaponSpawned);
+	DOREPLIFETIME(ABaseCharacter, CombatState);
+}
+
+void ABaseCharacter::ServerRequestReload_Implementation()
+{
+	HandleRequestReload();
+}
+
+void ABaseCharacter::ServerRequestStartAiming_Implementation()
+{
+	HandleRequestStartAiming();
+}
+
+void ABaseCharacter::ServerRequestEndAiming_Implementation()
+{
+	HandleRequestEndAiming();
+}
+
+void ABaseCharacter::ServerRequestSprintToggle_Implementation()
 {
 	HandleToggleSprint();
 }

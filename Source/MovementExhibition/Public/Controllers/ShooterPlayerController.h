@@ -71,6 +71,7 @@ protected:
 	void SetupCharacter(AActor* NewCharacter);
 	void InitializeHud();
 	void InitializeHudDelegates();
+	void FinalizeInitialize() const;
 	
 // Action functions
 protected:
@@ -88,6 +89,8 @@ protected:
 	void RequestChangeWeaponThirdSlot();
 	void RequestChangeWeaponFourthSlot();
 	void RequestChangeWeapon(const int32 Index);
+	void RequestStartAiming();
+	void RequestEndAiming();
 
 // Net functions
 protected:
@@ -168,4 +171,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> ChangeWeaponFourthSlotAction;
 
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputAction> StartAimAction;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputAction> EndAimAction;
 };

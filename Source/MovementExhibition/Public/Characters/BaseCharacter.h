@@ -17,6 +17,14 @@ class USearchItemComponent;
 class UPlayerHud;
 class ABaseWeapon;
 
+UENUM(BlueprintType)
+enum class ECharacterCombatState : uint8
+{
+	Idle,
+	Aiming,
+	Reloading
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterReady, ACharacter*, InstigatorCharacter);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAbsorbShieldDamageDelegate, ACharacter*, InstigatorCharacter, const float, DamageAbsorbed, const float, NewShieldValue);
@@ -52,10 +60,19 @@ protected:
 	void OnShieldBroken();
 
 	void OnDeath();
-
-	void RequestEquipDefaultWeapon();
+	
 	void RequestEquipWeapon(ABaseWeapon* NewWeapon);
 
+	void HandleToggleSprint();
+
+	void HandleRequestStartAiming();
+
+	void HandleRequestEndAiming();
+
+	void HandleRequestReload();
+
+	void UpdateAim(const float);
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -71,8 +88,7 @@ public:
 
 	void RequestMove(const FVector2d& AxisValue);
 	void RequestLook(const FVector2d& AxisValue);
-	void RequestToggleSprint() const;
-	void HandleToggleSprint() const;
+	void RequestToggleSprint();
 	void RequestJump();
 	void RequestStopJumping();
 	void RequestWeaponPullTrigger() const;
@@ -80,6 +96,8 @@ public:
 	void RequestReloadCurrentWeapon();
 	void RequestChangeWeapon(const int32 WeaponIndex) const;
 	void RequestInteract();
+	void RequestStartAiming();
+	void RequestEndAiming();
 
 	UFUNCTION(BlueprintPure)
 	float GetMaxHealth() const;
@@ -123,10 +141,24 @@ public:
 	UFUNCTION(BlueprintPure)
 	ABaseWeapon* GetCurrentWeapon() const;
 
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE ECharacterCombatState GetCharacterCombatState() const { return CombatState; };
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE bool IsAiming() const { return GetCharacterCombatState() == ECharacterCombatState::Aiming; }
+
+	UFUNCTION(BlueprintPure)
+	float GetLookUpRate() const;
+
+	UFUNCTION(BlueprintPure)
+	float GetLookRightRate() const;
+
 	void NotifyShieldDamage(const float DamageAbsorbed, const float NewShield);
 	void NotifyShieldRegen(const float Amount, const float NewShield);
 	void NotifyHealthDamage(const float DamageAbsorbed, const float NewHealth);
 	void NotifyHealthRegen(const float Amount, const float NewHealth);
+
+	void RequestEquipDefaultWeapon();
 
 // Callbacks
 protected:
@@ -137,6 +169,9 @@ protected:
 	void OnItemLost(AActor* ItemLost);
 
 // Net functions
+public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 protected:
 	UFUNCTION(Server, Reliable)
 	void ServerRequestEquipWeapon(ABaseWeapon* NewWeapon);
@@ -145,7 +180,16 @@ protected:
 	void MulticastRequestEquipWeapon(ABaseWeapon* NewWeapon);
 
 	UFUNCTION(Server, Reliable)
-	void ServerRequestSprintToggle() const;
+	void ServerRequestSprintToggle();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestStartAiming();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestEndAiming();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestReload();
 	
 // Events
 public:
@@ -191,6 +235,27 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Sprint", meta=(ClampMin="0", UIMin="0", ForceUnits="cm/s"))
 	float SprintSpeed = 900.f;
+
+	UPROPERTY(EditAnywhere, Category="Aiming")
+	float AimingFov = 50.f;
+
+	UPROPERTY(EditAnywhere, Category="Aiming")
+	float TimeToAim = 1.f;
+
+	UPROPERTY(VisibleAnywhere, Category="Aiming")
+	float CurrentTimeAiming = 0.f;
+
+	UPROPERTY(EditAnywhere, Category="Aiming")
+	float AimingLookUpRate = 50.f;
+
+	UPROPERTY(EditAnywhere, Category="Aiming")
+	float AimingLookRightRate = 50.f;
+
+	UPROPERTY(EditAnywhere, Category="Aiming")
+	float AimingWalkSpeed = 250.f;
+
+	UPROPERTY(Transient)
+	float IdleFov = 90.f;
 	
 	UPROPERTY(Transient)
 	float WalkSpeed = 600.f;
@@ -203,6 +268,12 @@ protected:
 
 	UPROPERTY(Transient)
 	TObjectPtr<AController> LastDamageCauserController;
+
+	UPROPERTY(Transient, Replicated)
+	bool bDefaultWeaponSpawned = false;
+
+	UPROPERTY(Transient, Replicated)
+	ECharacterCombatState CombatState = ECharacterCombatState::Idle;
 
 // Events
 protected:
