@@ -17,7 +17,7 @@ enum class EAmmoType : uint8
 };
 
 UCLASS()
-class MOVEMENTEXHIBITION_API AAmmoItem : public AConsumableItem
+class MOVEMENTEXHIBITION_API  AAmmoItem : public AConsumableItem
 {
 	GENERATED_BODY()
 

@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class MOVEMENTEXHIBITION_API AShieldItem : public AConsumableItem
+class MOVEMENTEXHIBITION_API  AShieldItem : public AConsumableItem
 {
 	GENERATED_BODY()
 

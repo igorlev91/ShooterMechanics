@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class MOVEMENTEXHIBITION_API AHealthItem : public AConsumableItem
+class MOVEMENTEXHIBITION_API  AHealthItem : public AConsumableItem
 {
 	GENERATED_BODY()
 

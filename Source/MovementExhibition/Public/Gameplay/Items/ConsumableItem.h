@@ -13,7 +13,7 @@ class URotatingMovementComponent;
  * 
  */
 UCLASS()
-class MOVEMENTEXHIBITION_API AConsumableItem : public ABaseItem
+class MOVEMENTEXHIBITION_API  AConsumableItem : public ABaseItem
 {
 	GENERATED_BODY()
 

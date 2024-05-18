@@ -9,7 +9,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemUsedDelegate, AActor*, ItemUsed, AActor*, Instigator);
 
 UCLASS()
-class MOVEMENTEXHIBITION_API ABaseItem : public AActor
+class MOVEMENTEXHIBITION_API  ABaseItem : public AActor
 {
 	GENERATED_BODY()
 
@@ -30,6 +30,9 @@ public:
 	FORCEINLINE bool IsItemEnabled() const { return bIsItemEnabled; }
 	virtual void DisableItem() { bIsItemEnabled = false; }
 	virtual void EnableItem() { bIsItemEnabled = true; }
+
+	virtual void EnableHighlight() const;
+	virtual void DisableHighlight() const;
 	
 // Components
 protected:
