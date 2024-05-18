@@ -11,7 +11,7 @@ class ABaseCharacter;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShieldBreakDelegate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API UShieldComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API  UShieldComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

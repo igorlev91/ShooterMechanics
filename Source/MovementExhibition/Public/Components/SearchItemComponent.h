@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNewItemFoundDelegate, const FHit
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemLostDelegate, AActor*, LostItem);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent, ToolTip="Search for specific actors in front of the current character/actor.") )
-class MOVEMENTEXHIBITION_API USearchItemComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API  USearchItemComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

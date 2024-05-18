@@ -17,7 +17,7 @@ enum class EThrowActionState : uint8
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API UThrowComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API  UThrowComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -50,7 +50,13 @@ public:
 	void FinishThrowing();
 
 	UFUNCTION(BlueprintCallable)
-	void ChangeThrowable(const TSubclassOf<ABaseThrowable> NewThrowableClass);
+	void ChangeThrowable(const TSubclassOf<ABaseThrowable> NewThrowableClass, const int32 Quantity);
+
+	UFUNCTION(BlueprintCallable)
+	void AddQuantity(const int32 Quantity);
+
+	UFUNCTION(BlueprintPure)
+	TSubclassOf<ABaseThrowable> GetCurrentThrowable() const { return ThrowableClass; }
 
 // Properties
 protected:

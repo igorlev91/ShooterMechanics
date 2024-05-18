@@ -10,7 +10,7 @@ class ABaseCharacter;
 class ABaseWeapon;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API UWeaponInventoryComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API  UWeaponInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

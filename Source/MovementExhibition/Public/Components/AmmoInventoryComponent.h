@@ -9,7 +9,7 @@
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API UAmmoInventoryComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API  UAmmoInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
