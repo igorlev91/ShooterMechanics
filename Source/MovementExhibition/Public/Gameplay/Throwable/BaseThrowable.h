@@ -11,7 +11,7 @@ class UCapsuleComponent;
 class UParticleSystem;
 
 UCLASS()
-class MOVEMENTEXHIBITION_API ABaseThrowable : public AActor
+class MOVEMENTEXHIBITION_API  ABaseThrowable : public AActor
 {
 	GENERATED_BODY()
 	
@@ -93,6 +93,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Detonate")
 	TObjectPtr<UParticleSystem> ExplodeParticle;
+
+	UPROPERTY(EditAnywhere, Category="Detonate")
+	float ExplodeParticleScale = 2.f;
 
 	UPROPERTY(EditAnywhere, Category="Damage")
 	float BaseDamage = 50.f;
