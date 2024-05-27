@@ -11,7 +11,7 @@ class UCapsuleComponent;
 class UParticleSystem;
 
 UCLASS()
-class MOVEMENTEXHIBITION_API  ABaseThrowable : public AActor
+class MOVEMENTEXHIBITION_API ABaseThrowable : public AActor
 {
 	GENERATED_BODY()
 	
@@ -25,7 +25,9 @@ protected:
 
 	void StartDetonateTimer();
 
-	void SpawnExplodeParticle() const;
+	void SpawnExplodeParticle();
+
+	void HandleSpawnExplodeParticle() const;
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyPointDamage(AActor* OtherActor);
@@ -66,6 +68,11 @@ protected:
 	UFUNCTION()
 	void OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
 
+// Net functions
+protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSpawnExplodeParticle();
+	
 // Components
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, NoClear)
