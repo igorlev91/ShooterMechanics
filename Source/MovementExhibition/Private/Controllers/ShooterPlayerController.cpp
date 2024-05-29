@@ -9,6 +9,7 @@
 #include "UI/PlayerHud.h"
 #include "Characters/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Gameplay/Throwable/BaseThrowable.h"
 
 void AShooterPlayerController::BeginPlay()
 {
@@ -129,6 +130,28 @@ void AShooterPlayerController::OnCharacterRegenHealth(ACharacter* InstigatorChar
 	}
 }
 
+void AShooterPlayerController::OnCharacterChangeThrowable(
+	TSubclassOf<ABaseThrowable> NewThrowableClass,
+	const int32 Quantity
+) {
+	if (PlayerHudRef)
+	{
+		const ABaseThrowable* ThrowableDefault = NewThrowableClass->GetDefaultObject<ABaseThrowable>();
+		if (ThrowableDefault)
+		{
+			PlayerHudRef->OnChangeThrowable(ThrowableDefault->GetThrowableName(), ThrowableDefault->GetThrowableThumbnail(), Quantity);
+		}
+	}
+}
+
+void AShooterPlayerController::OnCharacterChangeThrowableQuantity(const int32 NewQuantity)
+{
+	if (PlayerHudRef)
+	{
+		PlayerHudRef->OnChangeThrowableQuantity(NewQuantity);
+	}
+}
+
 void AShooterPlayerController::InitializeMappingContext()
 {
 	UEnhancedInputLocalPlayerSubsystem* EnhancedInputLocalPlayerSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
@@ -241,6 +264,14 @@ void AShooterPlayerController::InitializeHudDelegates()
 		{
 			BaseCharacterRef->OnRegenHealth().AddDynamic(this, &AShooterPlayerController::OnCharacterRegenHealth);
 		}
+		if (!BaseCharacterRef->OnCharacterChangeThrowable().IsAlreadyBound(this, &AShooterPlayerController::OnCharacterChangeThrowable))
+		{
+			BaseCharacterRef->OnCharacterChangeThrowable().AddDynamic(this, &AShooterPlayerController::OnCharacterChangeThrowable);
+		}
+		if (!BaseCharacterRef->OnCharacterChangeThrowableQuantity().IsAlreadyBound(this, &AShooterPlayerController::OnCharacterChangeThrowableQuantity))
+		{
+			BaseCharacterRef->OnCharacterChangeThrowableQuantity().AddDynamic(this, &AShooterPlayerController::OnCharacterChangeThrowableQuantity);
+		}
 	}
 }
 
@@ -264,17 +295,29 @@ void AShooterPlayerController::RequestStopJumpAction()
 
 void AShooterPlayerController::RequestMoveAction(const FInputActionValue& Value)
 {
+	const FVector2d MoveValue = Value.Get<FVector2d>();
 	if (BaseCharacterRef)
 	{
 		BaseCharacterRef->RequestMove(Value.Get<FVector2d>());
+	}
+
+	if (PlayerHudRef)
+	{
+		PlayerHudRef->OnPlayerMove(MoveValue.X, MoveValue.Y);
 	}
 }
 
 void AShooterPlayerController::RequestLookAction(const FInputActionValue& Value)
 {
+	const FVector2d CameraMoveValue = Value.Get<FVector2d>();
 	if (BaseCharacterRef)
 	{
-		BaseCharacterRef->RequestLook(Value.Get<FVector2d>());
+		BaseCharacterRef->RequestLook(CameraMoveValue);
+	}
+
+	if (PlayerHudRef)
+	{
+		PlayerHudRef->OnCameraMove(CameraMoveValue.X, CameraMoveValue.Y);
 	}
 }
 
