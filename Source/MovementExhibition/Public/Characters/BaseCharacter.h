@@ -19,6 +19,9 @@ class UPlayerHud;
 class ABaseWeapon;
 class AThrowableItem;
 class ABaseThrowable;
+class UAimComponent;
+class UChildActorComponent;
+class ACameraActor;
 
 UENUM(BlueprintType)
 enum class ECharacterCombatState : uint8
@@ -84,9 +87,7 @@ protected:
 	void HandleRequestEndAiming();
 
 	void HandleRequestReload();
-
-	void UpdateAim(const float);
-
+	
 	void HandleRequestChangeThrowable(const AThrowableItem* NewThrowableClass, const int32 Quantity);
 
 	void HandleRequestAddThrowableQuantity(const int32 Quantity);
@@ -187,6 +188,12 @@ public:
 
 	void RequestEquipDefaultWeapon();
 
+	void SetAimingState();
+	void UnsetAimingState();
+	
+	UFUNCTION(BlueprintPure)
+	ACameraActor* GetAimCamera() const;
+
 // Callbacks
 protected:
 	UFUNCTION()
@@ -258,6 +265,12 @@ protected:
 	TObjectPtr<UCameraComponent> CameraComponent;
 
 	UPROPERTY(VisibleAnywhere, NoClear)
+	TObjectPtr<USpringArmComponent> AimCameraBoom;
+	
+	UPROPERTY(VisibleAnywhere, NoClear)
+	TObjectPtr<UChildActorComponent> ChildAimCameraComponent;
+
+	UPROPERTY(VisibleAnywhere, NoClear)
 	TObjectPtr<UHealthComponent> HealthComponent;
 
 	UPROPERTY(VisibleAnywhere)
@@ -274,6 +287,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UThrowComponent> ThrowComponent;
+
+	UPROPERTY()
+	TObjectPtr<UAimComponent> AimComponent;
 	
 // Properties
 protected:
@@ -285,21 +301,18 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Sprint", meta=(ClampMin="0", UIMin="0", ForceUnits="cm/s"))
 	float SprintSpeed = 900.f;
-
-	UPROPERTY(EditAnywhere, Category="Aiming")
-	float AimingFov = 50.f;
-
-	UPROPERTY(EditAnywhere, Category="Aiming")
-	float TimeToAim = 1.f;
-
-	UPROPERTY(VisibleAnywhere, Category="Aiming")
-	float CurrentTimeAiming = 0.f;
-
+	
 	UPROPERTY(EditAnywhere, Category="Aiming")
 	float AimingLookUpRate = 50.f;
 
 	UPROPERTY(EditAnywhere, Category="Aiming")
 	float AimingLookRightRate = 50.f;
+
+	UPROPERTY(EditAnywhere, Category="Aiming")
+	float AimAssistLookUpRate = 25.f;
+
+	UPROPERTY(EditAnywhere, Category="Aiming")
+	float AimAssistLookRightRate = 25.f;
 
 	UPROPERTY(EditAnywhere, Category="Aiming")
 	float AimingWalkSpeed = 250.f;
