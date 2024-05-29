@@ -13,7 +13,7 @@ class UCapsuleComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnProjectileHitDelegate, AActor*, ProjectileInstigator, AActor*, ActorHit, const FHitResult&, HitResult);
 
 UCLASS()
-class MOVEMENTEXHIBITION_API ABaseProjectile : public AActor
+class MOVEMENTEXHIBITION_API  ABaseProjectile : public AActor
 {
 	GENERATED_BODY()
 	
@@ -33,6 +33,8 @@ protected:
 public:
 	FOnProjectileHitDelegate& OnProjectileHit() { return ProjectileHitDelegate; }
 	void Fire(const FVector& Direction);
+
+	FORCEINLINE UCapsuleComponent* GetTriggerVolume() { return TriggerVolume; }
 
 // Components
 protected:
