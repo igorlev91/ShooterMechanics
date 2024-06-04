@@ -11,7 +11,7 @@ class UCapsuleComponent;
 class UParticleSystem;
 
 UCLASS()
-class MOVEMENTEXHIBITION_API ABaseThrowable : public AActor
+class MOVEMENTEXHIBITION_API  ABaseThrowable : public AActor
 {
 	GENERATED_BODY()
 	
@@ -45,6 +45,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Stick(AActor* ActorToStick, UPrimitiveComponent* ComponentToStick, const FName& BoneName);
+
+	UFUNCTION(BlueprintPure)
+	FName GetThrowableName() const { return ThrowableName; }
+	
+	UFUNCTION(BlueprintPure)
+	UTexture2D* GetThrowableThumbnail() const { return ThrowableThumbnail; }
 
 // Events
 public:
@@ -110,8 +116,17 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Damage")
 	TSubclassOf<UDamageType> DamageType;
 
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	FName ThrowableName;
+	
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TObjectPtr<UTexture2D> ThrowableThumbnail;
+
 	UPROPERTY(Transient)
 	TWeakObjectPtr<AController> OwnerController;
+
+	UPROPERTY(Transient)
+	float CachedLifeSpan = InitialLifeSpan;
 	
 	FTimerHandle DetonateTimerHandle;
 };
