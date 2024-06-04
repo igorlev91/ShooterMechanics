@@ -287,6 +287,29 @@ AController* ABaseWeapon::GetControllerOwner()
 	return ControllerOwner;
 }
 
+float ABaseWeapon::GetRecoilCurrentAngle() const
+{
+	if (WeaponFireComponent)
+	{
+		return WeaponFireComponent->GetRecoilCurrentAngle();
+	}
+
+	return 0.f;
+}
+
+float ABaseWeapon::GetShotgunMaxAngle() const
+{
+	if (WeaponFireComponent)
+	{
+		if (WeaponFireComponent->GetWeaponFireType() == EWeaponFireType::ConeSpread)
+		{
+			return WeaponFireComponent->GetNoiseAngle();
+		}
+	}
+
+	return 0.f;
+}
+
 void ABaseWeapon::OnWeaponShot(const FHitResult& ShotResult, const FVector& EndShotLocation)
 {
 	HandleWeaponShot();

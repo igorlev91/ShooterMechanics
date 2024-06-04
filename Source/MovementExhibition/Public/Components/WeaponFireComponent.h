@@ -30,7 +30,7 @@ enum class EWeaponFireType
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API  UWeaponFireComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API UWeaponFireComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -83,6 +83,8 @@ public:
 	
 	FORCEINLINE float GetWeaponRangeInMeters() const { return WeaponRange * 100.f; }
 	FORCEINLINE EWeaponFireType GetWeaponFireType() const { return WeaponFireType; }
+	FORCEINLINE float GetRecoilCurrentAngle() const { return RecoilCurrentAngle; }
+	FORCEINLINE float GetNoiseAngle() const { return NoiseAngle; }
 
 	AController* FillControllerOwner();
 
