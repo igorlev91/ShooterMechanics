@@ -95,8 +95,8 @@ void ABaseCharacter::InitializeCharacter()
 
 	if (WeaponInventoryComponent != nullptr)
 	{
-		WeaponInventoryComponent->OnEquipWeapon().AddDynamic(this, &ABaseCharacter::OnEquipWeapon);
-		WeaponInventoryComponent->OnChangeWeapon().AddDynamic(this, &ABaseCharacter::OnChangeWeapon);
+	//	WeaponInventoryComponent->OnEquipWeapon().AddDynamic(this, &ABaseCharacter::OnEquipWeapon);
+		//WeaponInventoryComponent->OnChangeWeapon().AddDynamic(this, &ABaseCharacter::OnChangeWeapon);
 	}
 
 	WalkSpeed = (GetCharacterMovement())? GetCharacterMovement()->MaxWalkSpeed : WalkSpeed;
@@ -211,6 +211,16 @@ void ABaseCharacter::UnsetAimingState()
 ACameraActor* ABaseCharacter::GetAimCamera() const
 {
 	return Cast<ACameraActor>(ChildAimCameraComponent->GetChildActor());
+}
+
+AActor* ABaseCharacter::GetLastDamageCauser() const
+{
+	if (LastDamageCauserController == nullptr)
+	{
+		return nullptr;
+	}
+
+	return LastDamageCauserController->GetPawn();
 }
 
 void ABaseCharacter::RequestEquipWeapon(ABaseWeapon* NewWeapon)
