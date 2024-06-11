@@ -21,7 +21,7 @@ enum class ESpikeStatus
  * 
  */
 UCLASS()
-class MOVEMENTEXHIBITION_API ASpikeTrap : public ABaseTrap
+class KOTHARENA_API ASpikeTrap : public ABaseTrap
 {
 	GENERATED_BODY()
 
