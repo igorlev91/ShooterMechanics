@@ -21,6 +21,8 @@ public:
 
 protected:
 	FHitResult PerformAttack(const AController* OwnerController, const APawn* ControlledPawn) const;
+	bool TargetIsVisible(const APawn* ControlledPawn, const AActor* Target) const;
+	static void RotateToTarget(APawn* ControlledPawn, const AActor* Target);
 
 	void ApplyDamage(AActor* HitActor, AController* Instigator, AActor* Causer) const;
 	void PushActorAway(AActor* HitActor, const APawn* ControlledPawn) const;
@@ -34,21 +36,30 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Trace")
 	float SphereRadius = 25.f;
 
-	UPROPERTY(EditAnywhere, Category="Attack")
+	UPROPERTY(EditAnywhere, Category="Trace")
+	float VisibilityCapsuleRadius = 34.f;
+
+	UPROPERTY(EditAnywhere, Category="Trace")
+	float VisibilityCapsuleHalfHeight = 88.f;
+
+	UPROPERTY(EditAnywhere, Category="Attack|Damage")
 	float MinDamage = 10.f;
 
-	UPROPERTY(EditAnywhere, Category="Attack")
+	UPROPERTY(EditAnywhere, Category="Attack|Damage")
 	float MaxDamage = 25.f;
 
-	UPROPERTY(EditAnywhere, Category="Attack")
+	UPROPERTY(EditAnywhere, Category="Attack|Damage")
 	TSubclassOf<UDamageType> DamageType;
 
-	UPROPERTY(EditAnywhere, Category="Attack")
+	UPROPERTY(EditAnywhere, Category="Attack|Push")
 	bool bPushTargetAway = true;
 
-	UPROPERTY(EditAnywhere, Category="Attack")
+	UPROPERTY(EditAnywhere, Category="Attack|Push")
 	float PushForce = 2000.f;
 
-	UPROPERTY(EditAnywhere, Category="Attack")
+	UPROPERTY(EditAnywhere, Category="Attack|FX")
 	TObjectPtr<UParticleSystem> HitParticle;
+
+	UPROPERTY(EditAnywhere, Category="Attack|Rotate")
+	FName BlackboardKeyTargetActor = NAME_None;
 };

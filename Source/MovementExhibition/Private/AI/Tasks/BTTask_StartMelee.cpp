@@ -4,6 +4,7 @@
 #include "AI/Tasks/BTTask_StartMelee.h"
 
 #include "AIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -30,9 +31,16 @@ EBTNodeResult::Type UBTTask_StartMelee::ExecuteTask(UBehaviorTreeComponent& Owne
 		UE_LOG(LogTemp, Error, TEXT("UBTTask_StartMelee::ExecuteTask -> Unable to get controlled pawn."))
 		return EBTNodeResult::Failed;
 	}
+
+	const AActor* Target = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(BlackboardKeyTargetActor));
+	RotateToTarget(ControlledPawn, Target);
+
+	if (!TargetIsVisible(ControlledPawn, Target))
+	{
+		return EBTNodeResult::Failed;
+	}
 	
 	const FHitResult AttackResult = PerformAttack(Controller, ControlledPawn);
-
 	if (AttackResult.bBlockingHit)
 	{
 		AActor* HitActor = AttackResult.GetActor();
@@ -85,6 +93,56 @@ FHitResult UBTTask_StartMelee::PerformAttack(const AController* OwnerController,
 	);
 
 	return MeleeHit;
+}
+
+bool UBTTask_StartMelee::TargetIsVisible(const APawn* ControlledPawn, const AActor* Target) const
+{
+	if (ControlledPawn == nullptr || Target == nullptr)
+	{
+		return false;
+	}
+	
+	const FVector PawnLocation = ControlledPawn->GetActorLocation();
+	const FVector TargetLocation = Target->GetActorLocation();
+	
+	FCollisionShape Capsule = FCollisionShape::MakeCapsule(VisibilityCapsuleRadius, VisibilityCapsuleHalfHeight);
+
+	if (CVarDebugMeleeAttack->GetBool())
+	{
+		DrawDebugCapsule(GetWorld(), PawnLocation, VisibilityCapsuleHalfHeight, VisibilityCapsuleRadius, FRotator::ZeroRotator.Quaternion(), FColor::Blue, true);
+		DrawDebugCapsule(GetWorld(), TargetLocation, VisibilityCapsuleHalfHeight, VisibilityCapsuleRadius, FRotator::ZeroRotator.Quaternion(), FColor::Red, true);
+	}
+
+	FCollisionQueryParams QueryParams{TEXT("MeleeVisiblityCheck")};
+	QueryParams.AddIgnoredActor(ControlledPawn);
+	QueryParams.AddIgnoredActor(Target);
+	
+	FHitResult SomethingBlocking;
+	const bool bHit = GetWorld()->SweepSingleByChannel(
+		SomethingBlocking,
+		PawnLocation,
+		TargetLocation,
+		FRotator::ZeroRotator.Quaternion(),
+		ECC_Visibility,
+		Capsule,
+		QueryParams
+	);
+
+	// Since we're ignoring ControlledPawn and Target if bHit is true there's something blocking the view
+	return !bHit;
+}
+
+void UBTTask_StartMelee::RotateToTarget(APawn* ControlledPawn, const AActor* Target)
+{
+	if (ControlledPawn == nullptr || Target == nullptr)
+	{
+		return;
+	}
+
+	const FVector DirectionToTarget = Target->GetActorLocation() - ControlledPawn->GetActorLocation();
+	const FRotator RotationToTarget = DirectionToTarget.Rotation();
+
+	ControlledPawn->SetActorRotation(RotationToTarget);
 }
 
 void UBTTask_StartMelee::ApplyDamage(AActor* HitActor, AController* Instigator, AActor* Causer) const
