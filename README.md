@@ -68,7 +68,7 @@ In this video I briefly show all the mechanics implemented in a multiplayer envi
 ## The project
 
 #### Zombies
-![Zombie Design.png](Concept/Zombie_Design.png)
+
 
 ### Overview
 This project is a single and multiplayer shooter that takes inspiration from various
