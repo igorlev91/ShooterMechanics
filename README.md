@@ -23,6 +23,8 @@ While you hold the button you go towards your destination but you can also leave
 * You can specify how much **velocity** you **lose** after you reach your **destination** or you leave it mid-air (in percentage).
 * You can enter a **montage** to animate the enter into **hook state**.
 
+https://youtu.be/1t-Gxhfpkts
+
 ### Rope
 You can attach to a **rope** and follow it until you reach the other end of it... or leave it earlier to surprise your enemy.
 
@@ -36,18 +38,26 @@ You can attach to a **rope** and follow it until you reach the other end of it..
 * As for Hook, you can tune the **max speed** and you can also define a **curve** for it.
 * You can specify a **montage** to **jump** towards the rope.
 
+[Showcase video](https://youtu.be/VwLMZ-khyDU)
+
 ### Dive
 I implemented my version of the classical "**roll**" of souls-like games.
 If you have enough velocity you go in a **dive roll**, otherwise you do a **back-dodge**.
 If you're in air you gain a little boost in velocity simulating a **dash**.
+
+[Showcase video](https://youtu.be/WYpVlWVFGNQ)
 
 ### Sliding
 Using the **shift** button you can slide or crouch based on velocity. This limit is tunable.
 Sliding is physics based so you gain or lose velocity on ramps depending which direction you're going.
 You can also tune the braking deceleration speed.
 
+[Showcase video](https://youtu.be/gp2dS-iwpRI)
+
 ### Multiplayer demonstration
 In this video I briefly show all the mechanics implemented in a multiplayer environment with a listen-server and a client.
+
+[Showcase video](https://youtu.be/Qg1kfCjp0oM)
 
 ### Future implementations
 * Climbing ladders
