@@ -47,7 +47,20 @@ AActor* UWeaponFireComponent::GetOwnerToIgnore() const
 
 bool UWeaponFireComponent::ComputeScreenCenterAndDirection(FVector& CenterLocation, FVector& CenterDirection) const
 {
-	return UPlayerUtils::ComputeScreenCenterAndDirection(PlayerControllerRef, CenterLocation, CenterDirection);
+	if (PlayerControllerRef != nullptr)
+	{
+		return UPlayerUtils::ComputeScreenCenterAndDirection(PlayerControllerRef, CenterLocation, CenterDirection);
+	}
+	
+	if (AIControllerRef != nullptr)
+	{
+		FRotator CenterRotation;
+		AIControllerRef->GetActorEyesViewPoint(CenterLocation, CenterRotation);
+		CenterDirection = CenterRotation.Vector();
+		return true;
+	}
+
+	return false;
 }
 
 bool UWeaponFireComponent::TraceUnderScreenCenter(FHitResult& ShotResult, FVector& TraceEndLocation, bool bShouldUseRecoil) const
@@ -351,8 +364,8 @@ void UWeaponFireComponent::UpdateRecoil(const float DeltaTime)
 
 void UWeaponFireComponent::ProjectileHitSomething(AActor* ProjectileInstigator, AActor* OtherActor, const FHitResult& Hit)
 {
-//	const FVector HitLocation = (ProjectileInstigator)? ProjectileInstigator->GetActorLocation() : Hit.Location;
-//	WeaponHitDelegate.Broadcast(OtherActor, HitLocation, Hit.BoneName);
+	const FVector HitLocation = (ProjectileInstigator)? ProjectileInstigator->GetActorLocation() : Hit.Location;
+	WeaponHitDelegate.Broadcast(OtherActor, HitLocation, Hit.BoneName);
 }
 
 void UWeaponFireComponent::OnFinishBurstFire()

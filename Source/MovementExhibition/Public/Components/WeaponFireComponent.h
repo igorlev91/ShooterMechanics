@@ -30,7 +30,7 @@ enum class EWeaponFireType
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API  UWeaponFireComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API UWeaponFireComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

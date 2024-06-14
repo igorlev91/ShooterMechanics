@@ -67,9 +67,6 @@ In this video I briefly show all the mechanics implemented in a multiplayer envi
 
 ## The project
 
-#### Zombies
-![Zombie Design.png](Concept/Zombie_Design.png)
-
 ### Overview
 This project is a single and multiplayer shooter that takes inspiration from various
 games like Unreal Tournament, Ratchet And Clank and Call of Duty. Players can compete in various modes, both single player and multiplayer.
@@ -103,7 +100,7 @@ Different kinds of agents (mesh) using different kinds of weapons.
 
 ### Shooting
 
-[Showcase video] TODO
+
 Guns implemented: 
 * Pistol (single-shot)
 * Assault rifle (automatic fire)
@@ -114,9 +111,9 @@ Guns implemented:
 I've implemented shooting by creating a component, UWeaponFireComponent, which can be easily configured by designers. 
 By configuring its properties you can create multiple kind of weapons without modifying any code.
 
-### Throwable
+![WeaponFireComponent.png](Screenshots/WeaponFireComponent.png)
 
-[Showcase video]
+### Throwable
 
 Throwable objects implemented:
 * Grenades, which explodes after few seconds
@@ -126,9 +123,12 @@ Throwable objects implemented:
 I created a base throwable class with some helper functions such as "Stick" and "Explode". 
 The actual gameplay effects can be driven by designers using the Blueprint editor and some events I've exposed.
 
-### Aiming
+To help the player to throw objects I've implemented a visible trajectory to show where the object will lands.
 
-[Showcase video](TODO)
+Here's an example of how sticky bombs have been implemented. I launch an event when the bomb hit something and I call the **Stick** function exposed to blueprint from code.
+Simultaneously, when the bomb is spawned, I start a timer and when it reaches the end the bombs "**detonate**". I launch an event and I call the **Explode** function to deal damage to near actors. 
+
+### Aiming
 
 In the first version I implemented aiming by simply increasing the FOV of the character camera but the result wasn't so satisfying so I decided to change it.
 
@@ -139,15 +139,13 @@ Using this method I can change camera properties simply using blueprint and not 
 I've also added other properties to give control to designers to change how much time is needed to aim and to return to hip fire. 
 You can also specify a curve to switch between aiming and hip fire more gently.
 
-### Aim assist
+![AimingConfiguration.png](Screenshots/AimingConfiguration.png)
 
-[Showcase video]
+### Aim assist
 
 After improving aiming I decided to push even further by adding aim assist for controllers since it's a feature widely used in modern shooters.
 
 ### Multiplayer
-
-[Showcase video]
 
 Everything has been implemented using RPC and Replication in C++. Also working for local multiplayer.
 
@@ -162,6 +160,21 @@ Features working on multiplayer:
 
 UI responds accordingly to player and camera movement by floating around the screen, giving a feel of an alive interface (Ratchet and Clank: Rift Apart as inspiration).
 
+### Recoil
+
+For guns like pistols and rifles every shot add a bits of recoil which causes a small deviation for the shot from the middle of the screen.
+For shotguns recoil widens the angle which pellets will be spread.
+
+Here's some of the properties which can be tuned.
+
+* Recoil can be turned off/on
+* Recoil Max Angle: 
+  * Maximum angle within which shots can be deviated from the center of the screen
+  * Maximum angle added to shotgun noise angle which pellets will be spread.
+* Recoil Velocity: angle quantity added for each shot
+
+![RecoilConfiguration.png](Screenshots/RecoilConfiguration.png)
+
 ## Features improvement
 
 * Aim assist refinement; transitioning between aim assist active or not active using a curve to interpolate between rates of camera movement.
@@ -171,10 +184,13 @@ UI responds accordingly to player and camera movement by floating around the scr
 * Player basic movement (move, look, jump, sprint)
 * Player health and shield
 * Shooting with various guns
+* Recoil for different guns
+* Different reticles for guns.
 * Aiming and aim assist
 * Gun inventory
 * Ammo management
 * Multiple throwable objects
+* Predict trajectory for throwable objects
 * Pickable objects on overlap, such as ammo, regen
 * Pickable objects on interact, such as weapons and throwable objects
 * UI health, shield, weapons, throwable objects, ammo, hit marker and kill count
@@ -184,12 +200,10 @@ UI responds accordingly to player and camera movement by floating around the scr
 
 ## Currently WiP
 
-* Recoil; spread the bullets by a given max angle.
+* AI for Zombies (melee)
 
 ## Upcoming
 
-* Reticule for guns
-* AI for Zombies (melee)
 * AI for Agents (shooting)
 * New kind of traps
 * Stands for directional sprints/jump

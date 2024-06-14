@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class MOVEMENTEXHIBITION_API  UMathUtils : public UBlueprintFunctionLibrary
+class MOVEMENTEXHIBITION_API UMathUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
