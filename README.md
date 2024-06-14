@@ -1,5 +1,7 @@
 # ShooterMechanics
 
+Just study!
+
 This demo project was born to experiment different kinds of movement mechanics and practice math applied to kinematics.
 As a side effect, I ended up extending the Character Movement Component provided by Unreal Engine.
 All the mechanics implemented are fully replicated and tested for multiplayer.
@@ -23,7 +25,7 @@ While you hold the button you go towards your destination but you can also leave
 * You can specify how much **velocity** you **lose** after you reach your **destination** or you leave it mid-air (in percentage).
 * You can enter a **montage** to animate the enter into **hook state**.
 
-https://youtu.be/1t-Gxhfpkts
+[Showcase video](https://youtu.be/1t-Gxhfpkts)
 
 ### Rope
 You can attach to a **rope** and follow it until you reach the other end of it... or leave it earlier to surprise your enemy.
@@ -67,12 +69,6 @@ In this video I briefly show all the mechanics implemented in a multiplayer envi
 
 ## The project
 
-<<<<<<< HEAD
-=======
-#### Zombies
-
-
->>>>>>> 8ba2eb754a1283ee50dac10b6a39991a42b51793
 ### Overview
 This project is a single and multiplayer shooter that takes inspiration from various
 games like Unreal Tournament, Ratchet And Clank and Call of Duty. Players can compete in various modes, both single player and multiplayer.
@@ -105,7 +101,6 @@ Different kinds of agents (mesh) using different kinds of weapons.
 ## Features highlight
 
 ### Shooting
-
 
 Guns implemented: 
 * Pistol (single-shot)
@@ -181,6 +176,7 @@ Here's some of the properties which can be tuned.
 
 ![RecoilConfiguration.png](Screenshots/RecoilConfiguration.png)
 
+
 ## Features improvement
 
 * Aim assist refinement; transitioning between aim assist active or not active using a curve to interpolate between rates of camera movement.
@@ -203,14 +199,15 @@ Here's some of the properties which can be tuned.
 * Random spawner which can generate stuff by configuring objects and probabilities
 * Traps to deal damage to players
 * Everything working on multiplayer and split-screen
+* AI for Zombies (melee)
+* AI for Agents (shooting)
 
 ## Currently WiP
-
-* AI for Zombies (melee)
+* Improve agents movement. Should not overlap with other agents.
 
 ## Upcoming
 
-* AI for Agents (shooting)
+* Ticket system avoiding everyone shoot the player.
 * New kind of traps
 * Stands for directional sprints/jump
 * Dash movement

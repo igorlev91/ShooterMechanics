@@ -10,7 +10,7 @@ class UBlackboardComponent;
 class ABaseCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MOVEMENTEXHIBITION_API  UAITargetComponent : public UActorComponent
+class MOVEMENTEXHIBITION_API UAITargetComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -30,6 +30,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UFUNCTION(BlueprintPure)
+	AActor* GetCurrentTarget() const;
 
 // Properties
 protected:

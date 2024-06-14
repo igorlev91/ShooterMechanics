@@ -33,9 +33,18 @@ EBTNodeResult::Type UBTTask_Shoot::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 	{
 		Character->RequestReloadCurrentWeapon();
 	}
-	
+
+	// TODO branch based on current weapon
 	Character->RequestWeaponPullTrigger();
 	Character->RequestWeaponReleaseTrigger();
+	IncrementBulletShot(OwnerComp);
 	
 	return EBTNodeResult::Succeeded;
+}
+
+void UBTTask_Shoot::IncrementBulletShot(UBehaviorTreeComponent& OwnerComp) const
+{
+	int32 CurrentBulletShot = OwnerComp.GetBlackboardComponent()->GetValueAsInt(BlackboardKeyNumOfBulletShot);
+	CurrentBulletShot += 1;
+	OwnerComp.GetBlackboardComponent()->SetValueAsInt(BlackboardKeyNumOfBulletShot, CurrentBulletShot);
 }
