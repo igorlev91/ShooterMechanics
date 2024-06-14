@@ -67,6 +67,12 @@ In this video I briefly show all the mechanics implemented in a multiplayer envi
 
 ## The project
 
+<<<<<<< HEAD
+=======
+#### Zombies
+
+
+>>>>>>> 8ba2eb754a1283ee50dac10b6a39991a42b51793
 ### Overview
 This project is a single and multiplayer shooter that takes inspiration from various
 games like Unreal Tournament, Ratchet And Clank and Call of Duty. Players can compete in various modes, both single player and multiplayer.
